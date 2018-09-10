@@ -7,6 +7,16 @@ Down here the design/scratch of my game:
 
 
 
+
+
+
+
+
+
+
+
+
+
 chrome://dino/
 
 1 :
