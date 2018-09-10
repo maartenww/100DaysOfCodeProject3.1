@@ -13,8 +13,11 @@ chrome://dino/
 Create the dinosaur chrome game clone
 
 Definitions (* is definition)
+
 Poll: Checks for something
+
 Event: Mousemovements, clicking, typing etc.
+
 Parsing: find something
 
 
@@ -41,12 +44,18 @@ Gameloop
 --------------GAME LOOP--------------------
 
 2. *Poll and Handle *events:
+
 > Polls for events and responds appropiately
+
 > If event = exit Jump to quit (Jump to number 6)
+
 > Handle stuff like: Movement controls
+
 > Poll data such as speed, distance between object and size of objects
 
+
 3. Poll game elements and update them
+
 > Poll data and check the data of objects such as:
     Position
     Size
@@ -58,14 +67,20 @@ Gameloop
     ---- As well as unique data elements f.ex:
     isDinoAlive?
     Speed
+    
 > Update all those elements
 
 4. Draw the objects
+
 > Draw the surfaces unto the screensurface
+
 > Draw the objects
+
 > Basically draw all the sprites
 
 5. Show it unto the surface and jump back to number 2 for the 'game loop'
+
+
 --------------GAME LOOP--------------------
 
 
