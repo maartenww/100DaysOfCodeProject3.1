@@ -22,18 +22,24 @@ Gameloop
 :
 1. Setup the game:
 > Initialize the modules and libraries
+
 > Instantiate the classes and some variables
+
 > Game class with handle event method along with instantiation
+
 > Main function which contains this loop
+
 > if __name__ == "__main__":
     main()
     uninit)
   At the end of the code
+
 > Along with alot of other classes from objects to player to birds.
 
 
 
 --------------GAME LOOP--------------------
+
 2. *Poll and Handle *events:
 > Polls for events and responds appropiately
 > If event = exit Jump to quit (Jump to number 6)
