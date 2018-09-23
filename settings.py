@@ -8,4 +8,9 @@ GREY_WHITE = (224,224,224)
 WHITE = (255,255,255)
 BLACK = (0,0,0)
 
-all_sprites = pg.sprite.Group()
+#all_sprites = pg.sprite.Group()
+
+cacti = []
+
+PLAYER_GRAVITY = .3
+PLAYER_ACC = .5
