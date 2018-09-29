@@ -1,15 +1,21 @@
 import pygame as pg
 from settings import *
+import random
 
 vec = pg.math.Vector2
 
 #TODO: ADD Multiple obstacle generation
+#TODO: Current state: 2 cactus objects spawning (no lists)
 
 class Spritesheet():
 
+    # Class constructor
+    # Each time you instantiate a spritesheet you fill out the filename of the spritesheet
     def __init__(self,filename):
         self.spritesheet = pg.image.load_extended(filename)
 
+    # Method of the spritesheet class that lets you get a part of the image in the spritesheet
+    # by returning it with "return".
     def get_img(self, x, y, width, height):
         image = pg.Surface((width,height))
         image.blit(self.spritesheet, (0, 0), (x, y, width, height))
@@ -36,7 +42,7 @@ class Ground(pg.sprite.Sprite):
         self.REAL_Y = self.rect.y - self.ground_sprite_height
 
     def update_ground(self):
-        self.rect.x -= 5
+        self.rect.x -= 3
         if self.rect.x <= -1600:
             self.rect.x = 0
 
@@ -78,11 +84,8 @@ class Player(pg.sprite.Sprite):
 
     def pUpdate(self):
         self.player_acc = vec(0, PLAYER_GRAVITY)
-
         self.player_vel.y += self.player_acc.y
-
         self.player_pos.y += self.player_vel.y + 0.5 * self.player_acc.y
-
         self.rect.y = self.player_pos.y
 
         self.animate()
@@ -120,45 +123,77 @@ class Cactus(pg.sprite.Sprite):
 
     Cactus_sprite_width = 50
     Cactus_sprite_length = 100
-    Cactus_speed = 5
+    Cactus_speed = 3
 
     framenumber = 0
+
+    cactID = "0"
 
     def __init__(self, cactus_pos, cactus_speed):
 
         pg.sprite.Sprite.__init__(self)
+        # Loads spritesheet
         self.load_images()
+
+        # Makes it so that the cactus is a different image each time
         self.image = self.images[0]
+
         self.rect = self.image.get_rect()
         self.image = pg.transform.scale(self.image,(self.Cactus_sprite_width,self.Cactus_sprite_length))
 
         self.cactus_pos = cactus_pos
         self.cactus_pos = vec(SCREEN_WIDTH, 657)
 
+        # Makes the x and y position of the rect also the custom cactus pos at initialiization.
         self.rect.x = self.cactus_pos.x
         self.rect.y = self.cactus_pos.y
 
         self.Cactus_speed = cactus_speed
 
-        for i in range(len(cacti)):
-            cacti[i].cactus_pos.x = int(i * 2) #TODO: Make procedural cactus generation
-
     def cacUpdate(self):
+
         self.cactus_pos.x -= self.Cactus_speed
 
         self.rect.x = self.cactus_pos.x
         self.rect.y = self.cactus_pos.y
 
-        if self.cactus_pos.x < 0: #TODO: 'ADD self.cactus_pos.x = 1599' if you want cacti spawning each time...
-            self.framenumber = (self.framenumber + 1) % len(self.images) #TODO:....they reach the edge.
-            self.image = self.images[self.framenumber]
+        if self.cactus_pos.x < 0:
 
-        self.animate()
+            # <---------------------------------->
+            # Makes it so that the cactus is a different image each time
+            self.framenumber = (self.framenumber + 1) % len(self.images)
+            self.image = self.images[self.framenumber]
+            # <---------------------------------->
+
+            # Makes the cactus respawn at a further position on a different one based on the
+            # Framenumber (which is kinda random)
+            self.cactus_pos.x = 1599 + (self.framenumber * 1000)
+
+        # <------------------>
+        # Updates cacti from a list item per item
+        #for item in cacti:
+            #item.cactus_pos.x -= (self.Cactus_speed / 2)
+
+            #item.rect.x = item.cactus_pos.x
+            #item.rect.y = item.cactus_pos.y
+
+            #if item.cactus_pos.x < 0:
+                #item.cactus_pos.x = 1599 + random.randint(499, 9999)
+
+        # <------------------>
+
+        #TODO: Make it so that for the cacti list the x position (While being above 1600 for
+        #TODO: ... Longer "spawn time") is different for each individual....
+        #TODO ... Item.
+
+        #TODO: "spawn time" between asteriks, because it's basiaclly just because u cant see
+        #TODO: Beyond the screeen.
+
 
     def load_images(self):
         self.images = [Spritesheet.get_img(Spritesheet('sprites/cacti-big.png'), 0, 0, 50, 100)]
-        for frame in self.images:
-            frame.set_colorkey(BLACK)
+        for piece in self.images:
+            piece.set_colorkey(BLACK)
 
     def animate(self):
         pass
@@ -167,8 +202,6 @@ class BigCactus01(Cactus, pg.sprite.Sprite):
 
     bCactus_sprite_width = 47
     bCactus_sprite_length = 100
-
-
 
     def __init__(self):
 
@@ -193,8 +226,9 @@ class SmallCactus01(Cactus, pg.sprite.Sprite):
     sCactus_sprite_width = 33
     sCactus_sprite_length = 69
 
-    Cactus_speed = 7
+    Cactus_speed = 3
     framenumber = 0
+
 
     def __init__(self):
 
