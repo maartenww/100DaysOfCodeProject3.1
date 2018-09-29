@@ -12,5 +12,5 @@ BLACK = (0,0,0)
 
 cacti = []
 
-PLAYER_GRAVITY = .3
+PLAYER_GRAVITY = .2 #.3
 PLAYER_ACC = .5
