@@ -4,9 +4,6 @@ import random
 
 vec = pg.math.Vector2
 
-#TODO: ADD Multiple obstacle generation
-#TODO: Current state: 2 cactus objects spawning (no lists)
-
 class Spritesheet():
 
     # Class constructor
@@ -182,14 +179,6 @@ class Cactus(pg.sprite.Sprite):
 
         # <------------------>
 
-        #TODO: Make it so that for the cacti list the x position (While being above 1600 for
-        #TODO: ... Longer "spawn time") is different for each individual....
-        #TODO ... Item.
-
-        #TODO: "spawn time" between asteriks, because it's basiaclly just because u cant see
-        #TODO: Beyond the screeen.
-
-
     def load_images(self):
         self.images = [Spritesheet.get_img(Spritesheet('sprites/cacti-big.png'), 0, 0, 50, 100)]
         for piece in self.images:
@@ -252,3 +241,43 @@ class SmallCactus01(Cactus, pg.sprite.Sprite):
         if self.cactus_pos.x < 0:
             self.framenumber = (self.framenumber + 1) % len(self.images)
             self.image = self.images[self.framenumber]
+
+class replayButton(pg.sprite.Sprite):
+
+    button_sprite_width = 69
+    button_sprite_length = 62
+    button_sprite_size = (button_sprite_width, button_sprite_length)
+
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.Surface(((self.button_sprite_size)))
+        self.image = pg.image.load_extended('sprites/replay_button.png').convert_alpha()
+        self.image = pg.transform.scale(self.image, (self.button_sprite_width, self.button_sprite_length))
+
+        self.rect = self.image.get_rect()
+
+        self.butposx = SCREEN_WIDTH /2
+        self.butposy = SCREEN_HEIGHT / 2
+
+        self.rect.x = self.butposx
+        self.rect.y = self.butposy
+
+class gameOverFont(pg.sprite.Sprite):
+
+    font_width = 381
+    font_length = 22
+    font_size = (font_width, font_length)
+
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.Surface(((self.font_size)))
+        self.image = pg.image.load_extended('sprites/game_over.png').convert_alpha()
+        self.image = pg.transform.scale(self.image, (self.font_width, self.font_length))
+
+        self.rect = self.image.get_rect()
+
+        self.GOFx = (SCREEN_WIDTH /2 ) - 150
+        self.GOFy = (SCREEN_HEIGHT / 2) - 100
+
+        self.rect.x = self.GOFx
+        self.rect.y = self.GOFy
