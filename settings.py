@@ -14,3 +14,5 @@ cacti = []
 
 PLAYER_GRAVITY = .2 #.3
 PLAYER_ACC = .5
+
+FPS = 120
