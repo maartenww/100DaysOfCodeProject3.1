@@ -14,10 +14,16 @@ def main():
         newGame1.handle_events()
         newGame1.updateGame()
         newGame1.drawGame()
+        if newGame1.gameOver == True:
+            newGame1.restartGame()
+        elif newGame1.gameOver == False:
+            continue
+
 
 # Game Class
 class newGame:
     isRunning = False
+    gameOver = False
 
     # Constructor
     def __init__(self):
@@ -25,6 +31,9 @@ class newGame:
         # Init game window
         self.gameScreen = pg.display.set_mode((SCREEN_RESOLUTION))
         pg.display.set_caption('Die no gaem frumchrommmme')
+
+        # Clock init
+        self.clock = pg.time.Clock()
 
         # Gamestate boolean
         self.isRunning = True
@@ -59,7 +68,7 @@ class newGame:
         # Instantiate cacti Part2
         for x in range(4): # 4 Meaning the number of cacti
             cacti.append(SmallCactus01()) # We're adding 4 small cacti to the cacti list
-            cacti.append(BigCactus01()) # We're adding 4 big cacti to the cacti list
+            #cacti.append(BigCactus01()) # We're adding 4 big cacti to the cacti list
             for cactus in cacti: # For each cactus in the cacti list we do the following:
                 cactus.add(self.Cacti) # We add the cactus object to the Cacti SPRITE GROUP
                 cactus.add(self.all_sprites) # We add the cactus object to the ALL SPRITES SPRITES GROUP
@@ -77,13 +86,20 @@ class newGame:
 
         # <------------------------------------>
 
+        self.button01 = replayButton()
+        self.buttons = pg.sprite.Group()
+        self.buttons.add(self.button01)
 
+        self.GOF01 = gameOverFont()
+        self.GOFS = pg.sprite.Group()
+        self.GOFS.add(self.GOF01)
 
         # Load font
         self.myFont = pg.font.SysFont('Arial Black MS', 30)
 
     # Handle events
     def handle_events(self):
+        mouse = pg.mouse.get_pos()
         for event in pg.event.get():
             # Movement controls handle
             Player.handle(self.dinosaur, event)
@@ -93,8 +109,28 @@ class newGame:
                 pg.quit()
                 sys.exit()
 
+        # When game over, checks if the player clicks restart
+        if self.gameOver == True:
+            if (SCREEN_WIDTH / 2) + self.button01.button_sprite_width > mouse[0] > (SCREEN_WIDTH / 2) and (SCREEN_HEIGHT / 2) + self.button01.button_sprite_length > mouse[1] > (SCREEN_HEIGHT / 2):
+                print("We're in the button")
+                for event in pg.event.get():
+                    if event.type == pg.mouse.get_pressed()[0]:
+                        print('click xd') # This doesn't work yet
+
+        # For checking mouse pos (debugging)
+        #print(str(mouse[0]), str(mouse[1]))
+
+        #TODO: Current state: Basically done, only need to add the ability to restart the game when u click the button
+        #TODO: Current state part2: it prints "we're in the button' when. you guessed it you're in the restart button
+
+        #TODO: Make it so that when you click the button the game score is 0 and the game "restarts"
+
     # Poll and update game
     def updateGame(self):
+
+        #self.score = (int((pg.time.get_ticks()) / 100))
+
+        self.clock.tick(FPS)
 
         hits = pg.sprite.spritecollide(self.dinosaur, self.Cacti, False, pg.sprite.collide_mask)
 
@@ -102,6 +138,10 @@ class newGame:
         self.stry = self.myFont.render(str(int(self.dinosaur.player_pos.y)), False, (BLACK))
         self.ycolon = self.myFont.render('y: ',False,BLACK)
         self.dot = self.myFont.render('.',False,BLACK)
+
+        # Update score info
+        self.score = self.myFont.render(str(int((pg.time.get_ticks()) / 100)), False, (BLACK))
+        self.scoreText = self.myFont.render('Score: ', False, BLACK)
 
         # Update screen
         pg.display.update()
@@ -119,11 +159,8 @@ class newGame:
             self.dinosaur.canjump = True
 
         #TODO: Cactus collision (Instead of printing lol, make him die also...
-        #TODO: ...Make the game easier. Also maybe better collision masks.
         if hits:
-            print('lol')
-
-
+            self.gameOver = True
 
         #if pg.sprite.collide_rect_ratio(0.7):
 
@@ -144,7 +181,6 @@ class newGame:
         # For each cactus in the cacti list we use the unique cacUpdate method as well as print the position
         for cactus in cacti:
             cactus.cacUpdate()
-            #print(cactus.cactus_pos.x, cactus.cactus_pos.y)
 
     # Draw unto surface
     def drawGame(self):
@@ -155,9 +191,21 @@ class newGame:
         self.all_sprites.draw(self.gameScreen)
 
         # Draw y position live on screen
-        self.gameScreen.blit(self.ycolon, (0,0))
-        self.gameScreen.blit(self.stry, (25,0))
-        self.gameScreen.blit(self.dot, (0, 657))
+        #self.gameScreen.blit(self.ycolon, (0,0))
+        #self.gameScreen.blit(self.stry, (25,0))
+
+        # Draw score
+        self.gameScreen.blit(self.scoreText, (35, 10))
+        self.gameScreen.blit(self.score, (100, 10))
+
+        # Draw game over
+        #   Nothing yet
+
+    # Restart game method
+    def restartGame(self):
+        self.buttons.draw(self.gameScreen)
+        self.GOFS.draw(self.gameScreen)
+        self.score = 0
 
 # Instnatiate new game class
 newGame1 = newGame()
