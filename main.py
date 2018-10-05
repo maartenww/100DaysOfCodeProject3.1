@@ -1,212 +1,299 @@
 import pygame as pg
-import sys
 from settings import *
-from sprites1 import *
-import time
 import random
 
-pg.init()
+vec = pg.math.Vector2
 
+class Spritesheet():
 
-def main():
-    # Gameloop
-    while newGame1.isRunning:
-        newGame1.handle_events()
-        newGame1.updateGame()
-        newGame1.drawGame()
-        if newGame1.gameOver == True:
-            newGame1.gameOverScreen()
-        elif newGame1.gameOver == False:
-            continue
+    # Class constructor
+    # Each time you instantiate a spritesheet you fill out the filename of the spritesheet
+    def __init__(self,filename):
+        self.spritesheet = pg.image.load_extended(filename)
 
+    # Method of the spritesheet class that lets you get a part of the image in the spritesheet
+    # by returning it with "return".
+    def get_img(self, x, y, width, height):
+        image = pg.Surface((width,height))
+        image.blit(self.spritesheet, (0, 0), (x, y, width, height))
+        return image
 
-# Game Class
-class newGame:
-    isRunning = False
-    gameOver = False
+class Ground(pg.sprite.Sprite):
+    ground_sprite_width = 3200
+    ground_sprite_height = 13
+    ground_sprite_size = (ground_sprite_width, ground_sprite_height)
 
-    # Constructor
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.Surface(((self.ground_sprite_size)))
+        self.image = pg.image.load_extended('sprites/ground.png').convert_alpha()
+        self.image = pg.transform.scale(self.image, (self.ground_sprite_width,13 ))
+        self.rect = self.image.get_rect()
+
+        self.plat_pos_x = 0
+        self.plat_pos_y = 750
+
+        self.rect.x = self.plat_pos_x
+        self.rect.y = self.plat_pos_y
+
+        self.REAL_Y = self.rect.y - self.ground_sprite_height
+
+    def update_ground(self):
+        self.rect.x -= 3
+        if self.rect.x <= -1600:
+            self.rect.x = 0
+
+class Player(pg.sprite.Sprite):
+
+    player_sprite_width = 87 #73
+    player_sprite_height = 94 #78
+
     def __init__(self):
 
-        # Init game window
-        self.gameScreen = pg.display.set_mode((SCREEN_RESOLUTION))
-        pg.display.set_caption('Die no gaem frumchrommmme')
+        pg.sprite.Sprite.__init__(self)
+        self.load_images()
+        #self.image = Spritesheet.get_img(Spritesheet('sprites/dino.png'), 0, 0, 87,94) #94
+        self.image = self.walking_images[0]
+        self.rect = self.image.get_rect()
+        #self.image.set_colorkey(BLACK)
+        self.image = pg.transform.scale(self.image, (self.player_sprite_width, self.player_sprite_height))
 
-        # Clock init
-        self.clock = pg.time.Clock()
+        self.player_pos = vec(SCREEN_WIDTH / 8, 657)#SCREEN_HEIGHT / 1.375 -100
 
-        # Gamestate boolean
-        self.isRunning = True
-
-        # ---------------------
-        # Instantiate everything
-
-        # Ground and player instantiate
-        self.dinosaur = Player()
-        self.ground01 = Ground()
-        self.all_sprites = pg.sprite.Group()
-        self.all_sprites.add(self.dinosaur,self.ground01)
-        self.players = pg.sprite.Group()
-        self.players.add(self.dinosaur)
-        self.grounds = pg.sprite.Group()
-        self.grounds.add(self.ground01)
-
-        # <---------------------------------------------------------->
-
-        # Instantiate cacti (Kinda for testing) (Again individual sprites)
-        #self.bigCacti01 = BigCactus01()
-        #self.smallCacti01 = SmallCactus01()
-
-        # <---------------------------------------------------------->
+        self.rect.x = self.player_pos.x
+        self.rect.y = self.player_pos.y
 
 
-        # Cactus sprite group init
-        self.bigCacti = pg.sprite.Group()
-        self.smallCacti = pg.sprite.Group()
-        self.Cacti = pg.sprite.Group()
+        self.player_vel = vec(0, 0)
 
-        # Instantiate cacti Part2
-        for x in range(4): # 4 Meaning the number of cacti
-            cacti.append(SmallCactus01()) # We're adding 4 small cacti to the cacti list
-            #cacti.append(BigCactus01()) # We're adding 4 big cacti to the cacti list
-            for cactus in cacti: # For each cactus in the cacti list we do the following:
-                cactus.add(self.Cacti) # We add the cactus object to the Cacti SPRITE GROUP
-                cactus.add(self.all_sprites) # We add the cactus object to the ALL SPRITES SPRITES GROUP
-                #print(cactus.cactus_pos.x, cactus.cactus_pos.y) # We print the position of the cactus (testing)
-                cactus.cactus_pos.x += (random.randint(800,2400)) # We make sure each cactus has a different position and is far away from each other between 800 and 2400
+        self.player_acc = vec(0, 0)
 
+        self.canjump = False
 
-        # <------------------------------------>
+        self.current_frame = 0
+        self.last_update = 0
+        self.walking = True
 
-        # Adding individual sprites to group (kinda for testing)
-        #self.bigCacti.add(self.bigCacti01)
-        #self.smallCacti.add(self.smallCacti01)
-        #self.Cacti.add(self.bigCacti01, self.smallCacti01)
-        #self.all_sprites.add(self.bigCacti01, self.smallCacti01)
+    def jump(self):
+        if self.canjump == True:
 
-        # <------------------------------------>
+            self.player_vel.y = -10
 
-        self.button01 = replayButton()
-        self.buttons = pg.sprite.Group()
-        self.buttons.add(self.button01)
+    def pUpdate(self):
+        self.player_acc = vec(0, PLAYER_GRAVITY)
+        self.player_vel.y += self.player_acc.y
+        self.player_pos.y += self.player_vel.y + 0.5 * self.player_acc.y
+        self.rect.y = self.player_pos.y
 
-        self.GOF01 = gameOverFont()
-        self.GOFS = pg.sprite.Group()
-        self.GOFS.add(self.GOF01)
+        self.animate()
 
-        # Load font
-        self.myFont = pg.font.SysFont('Arial Black MS', 30)
+    def load_images(self):
+        self.walking_images = [Spritesheet.get_img(Spritesheet('sprites/dino.png'), 176, 0, 87, 94),
 
-    # Handle events
-    def handle_events(self):
-        for event in pg.event.get():
-            # Movement controls handle
-            Player.handle(self.dinosaur, event)
-            replayButton.handleButton(self.button01, event, self.gameOver)
-            isClicked = replayButton.handleButton(self.button01, event, self.gameOver)
-            if isClicked == 1:
-                self.restartGame()
-            # Quits if 'x' is clicked
-            if event.type == pg.QUIT:
-                self.isRunning = False
-                pg.quit()
-                sys.exit()
+                       Spritesheet.get_img(Spritesheet('sprites/dino.png'), 264, 0, 87, 94)]
+        self.standing_image = [Spritesheet.get_img(Spritesheet('sprites/dino.png'),0, 0, 87, 94)]
+        for image in self.walking_images:
+            image.set_colorkey(BLACK)
 
-        # For checking mouse pos (debugging)
-        #print(str(mouse[0]), str(mouse[1]))
+    def animate(self):
+        now = pg.time.get_ticks()
+        if self.walking:
+            if now - self.last_update > 350:
+                self.last_update = now
+                self.current_frame = (self.current_frame + 1) % len(self.walking_images)
 
-    # Poll and update game
-    def updateGame(self):
+        self.image = self.walking_images[self.current_frame]
+    def handle(self, event):
+        pressed = pg.key.get_pressed()
+        if pressed[pg.K_s]:
+            print('duck') #TODO: Optional, be able to duck
 
-        #self.score = (int((pg.time.get_ticks()) / 100))
+        if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
+            print('space')
+            self.jump()
+            self.canjump = False
 
-        self.clock.tick(FPS)
+        elif event.type == pg.KEYUP and event.key == pg.K_SPACE:
+            self.player_acc.y = 0
 
-        hits = pg.sprite.spritecollide(self.dinosaur, self.Cacti, False, pg.sprite.collide_mask)
+class Cactus(pg.sprite.Sprite):
 
-        # Update y-position information
-        self.stry = self.myFont.render(str(int(self.dinosaur.player_pos.y)), False, (BLACK))
-        self.ycolon = self.myFont.render('y: ',False,BLACK)
-        self.dot = self.myFont.render('.',False,BLACK)
+    Cactus_sprite_width = 50
+    Cactus_sprite_length = 100
+    Cactus_speed = 3
 
-        # Update score info
-        #self.score = self.myFont.render(str(int((pg.time.get_ticks()) / 100)), False, (BLACK))
-        self.scoreText = self.myFont.render('Score: ', False, BLACK)
+    framenumber = 0
 
-        # New Score
+    cactID = "0"
 
+    def __init__(self, cactus_pos, cactus_speed):
 
-        # Update screen
-        pg.display.update()
+        pg.sprite.Sprite.__init__(self)
+        # Loads spritesheet
+        self.load_images()
 
-        # Update sprites
-        self.all_sprites.update()
+        # Makes it so that the cactus is a different image each time
+        self.image = self.images[0]
 
-        # Update information
-        self.dinosaur.pUpdate()
+        self.rect = self.image.get_rect()
+        self.image = pg.transform.scale(self.image,(self.Cactus_sprite_width,self.Cactus_sprite_length))
 
-        # Sprite collision
-        if pg.sprite.collide_rect(self.dinosaur, self.ground01):
-            self.dinosaur.player_pos.y = 657
-            self.dinosaur.player_vel.y = 0
-            self.dinosaur.canjump = True
+        self.cactus_pos = cactus_pos
+        self.cactus_pos = vec(SCREEN_WIDTH, 657)
 
-        if hits:
-            self.gameOver = True
+        # Makes the x and y position of the rect also the custom cactus pos at initialiization.
+        self.rect.x = self.cactus_pos.x
+        self.rect.y = self.cactus_pos.y
 
-        #if pg.sprite.collide_rect_ratio(0.7):
+        self.Cactus_speed = cactus_speed
 
+        self.cacScore = 0
 
-        # <------------------------------------------------------------------->
+    def cacUpdate(self):
 
-        # Update additional information (Only for testing, individual cactus updating)
-        #self.smallCacti01.cacUpdate()
-        #self.bigCacti01.cacUpdate()
+        self.cactus_pos.x -= self.Cactus_speed
 
-        # <------------------------------------------------------------------->
+        self.rect.x = self.cactus_pos.x
+        self.rect.y = self.cactus_pos.y
 
+        self.cacScore += self.Cactus_speed / 100
 
-        # Update the ground with the unique update_ground method in the ground01 class
-        self.ground01.update_ground()
+        if self.cactus_pos.x < 0:
+
+            # <---------------------------------->
+            # Makes it so that the cactus is a different image each time
+            self.framenumber = (self.framenumber + 1) % len(self.images)
+            self.image = self.images[self.framenumber]
+            # <---------------------------------->
+
+            # Makes the cactus respawn at a further position on a different one based on the
+            # Framenumber (which is kinda random)
+            self.cactus_pos.x = 1599 + (self.framenumber * 1000)
 
 
-        # For each cactus in the cacti list we use the unique cacUpdate method as well as print the position
-        for cactus in cacti:
-            cactus.cacUpdate()
-            self.score = self.myFont.render(str(int(cactus.cacScore)), False, BLACK)
+        # <------------------>
+        # Updates cacti from a list item per item
+        #for item in cacti:
+            #item.cactus_pos.x -= (self.Cactus_speed / 2)
 
-    # Draw unto surface
-    def drawGame(self):
-        # Paint background white
-        self.gameScreen.fill(WHITE)
+            #item.rect.x = item.cactus_pos.x
+            #item.rect.y = item.cactus_pos.y
 
-        # Draw all sprites
-        self.all_sprites.draw(self.gameScreen)
+            #if item.cactus_pos.x < 0:
+                #item.cactus_pos.x = 1599 + random.randint(499, 9999)
 
-        # Draw y position live on screen
-        #self.gameScreen.blit(self.ycolon, (0,0))
-        #self.gameScreen.blit(self.stry, (25,0))
+        # <------------------>
 
-        # Draw score
-        self.gameScreen.blit(self.scoreText, (35, 10))
-        self.gameScreen.blit(self.score, (100, 10))
+    def load_images(self):
+        self.images = [Spritesheet.get_img(Spritesheet('sprites/cacti-big.png'), 0, 0, 50, 100)]
+        for piece in self.images:
+            piece.set_colorkey(BLACK)
 
-        # Draw game over
-        #   Nothing yet
+    def animate(self):
+        pass
 
-    # Restart game method
-    def restartGame(self):
-        for cactus in cacti:
-            cactus.cacScore = 0
-            cactus.Cactus_speed = 0
-        self.isRunning = False
-        # Reset score
-    def gameOverScreen(self):
-        self.buttons.draw(self.gameScreen)
-        self.GOFS.draw(self.gameScreen)
+class BigCactus01(Cactus, pg.sprite.Sprite):
 
-# Instnatiate new game class
-newGame1 = newGame()
+    bCactus_sprite_width = 47
+    bCactus_sprite_length = 100
 
-if __name__ == "__main__":
-    main()
+    def __init__(self):
+
+        pg.sprite.Sprite.__init__(self)
+        self.load_images()
+        self.image = self.images[0]
+        self.rect = self.image.get_rect()
+        self.image = pg.transform.scale(self.image, (self.bCactus_sprite_width, self.bCactus_sprite_length))
+
+        self.cactus_pos = vec(SCREEN_WIDTH, 657)
+        self.cactus_pos.x += 10
+
+    def load_images(self):
+        self.images = [Spritesheet.get_img(Spritesheet('sprites/cacti-big.png'), 52, 0 , 99, 100),
+                        Spritesheet.get_img(Spritesheet('sprites/cacti-big.png'), 102,0,49, 100),
+                        Spritesheet.get_img(Spritesheet('sprites/cacti-big.png'),200, 0, 101, 100 )]
+        for frame in self.images:
+            frame.set_colorkey(BLACK)
+
+class SmallCactus01(Cactus, pg.sprite.Sprite):
+
+    sCactus_sprite_width = 33
+    sCactus_sprite_length = 69
+
+    Cactus_speed = 3
+    framenumber = 0
+
+
+    def __init__(self):
+
+        pg.sprite.Sprite.__init__(self)
+        self.load_images()
+        self.image = self.images[0]
+        self.rect = self.image.get_rect()
+        self.image = pg.transform.scale(self.image, (self.sCactus_sprite_width, self.sCactus_sprite_length))
+
+        self.cactus_pos = vec(SCREEN_WIDTH, 682)
+
+        self.cacScore = 0
+
+    def load_images(self):
+        self.images = [Spritesheet.get_img(Spritesheet('sprites/cacti-small.png'),0,0,33,69),
+                       Spritesheet.get_img(Spritesheet('sprites/cacti-small.png'),36,0,32,69),
+                       Spritesheet.get_img(Spritesheet('sprites/cacti-small.png'),69,0,33,69),
+                       Spritesheet.get_img(Spritesheet('sprites/cacti-small.png'),137, 0,33,69)]
+        for frame in self.images:
+            frame.set_colorkey(BLACK)
+
+    def animate(self):
+        if self.cactus_pos.x < 0:
+            self.framenumber = (self.framenumber + 1) % len(self.images)
+            self.image = self.images[self.framenumber]
+
+class replayButton(pg.sprite.Sprite):
+
+    button_sprite_width = 69
+    button_sprite_length = 62
+    button_sprite_size = (button_sprite_width, button_sprite_length)
+
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.Surface(((self.button_sprite_size)))
+        self.image = pg.image.load_extended('sprites/replay_button.png').convert_alpha()
+        self.image = pg.transform.scale(self.image, (self.button_sprite_width, self.button_sprite_length))
+
+        self.rect = self.image.get_rect()
+
+        self.butposx = SCREEN_WIDTH /2
+        self.butposy = SCREEN_HEIGHT / 2
+
+        self.rect.x = self.butposx
+        self.rect.y = self.butposy
+
+    def handleButton(self, event, gameOverBoolean):
+        mouse = pg.mouse.get_pos()
+        if gameOverBoolean == True:
+            if (SCREEN_WIDTH / 2) + self.button_sprite_width > mouse[0] > (SCREEN_WIDTH / 2) and (SCREEN_HEIGHT / 2) + self.button_sprite_length > mouse[1] > (SCREEN_HEIGHT / 2):
+                print("We're in the button")
+                if event.type == pg.MOUSEBUTTONDOWN:
+                    print('click')
+                    return 1
+
+class gameOverFont(pg.sprite.Sprite):
+
+    font_width = 381
+    font_length = 22
+    font_size = (font_width, font_length)
+
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.image = pg.Surface(((self.font_size)))
+        self.image = pg.image.load_extended('sprites/game_over.png').convert_alpha()
+        self.image = pg.transform.scale(self.image, (self.font_width, self.font_length))
+
+        self.rect = self.image.get_rect()
+
+        self.GOFx = (SCREEN_WIDTH /2 ) - 150
+        self.GOFy = (SCREEN_HEIGHT / 2) - 100
+
+        self.rect.x = self.GOFx
+        self.rect.y = self.GOFy
