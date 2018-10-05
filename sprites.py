@@ -106,7 +106,7 @@ class Player(pg.sprite.Sprite):
     def handle(self, event):
         pressed = pg.key.get_pressed()
         if pressed[pg.K_s]:
-            print('duck')
+            print('duck') #TODO: Optional, be able to duck
 
         if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
             print('space')
@@ -147,12 +147,16 @@ class Cactus(pg.sprite.Sprite):
 
         self.Cactus_speed = cactus_speed
 
+        self.cacScore = 0
+
     def cacUpdate(self):
 
         self.cactus_pos.x -= self.Cactus_speed
 
         self.rect.x = self.cactus_pos.x
         self.rect.y = self.cactus_pos.y
+
+        self.cacScore += self.Cactus_speed / 100
 
         if self.cactus_pos.x < 0:
 
@@ -165,6 +169,7 @@ class Cactus(pg.sprite.Sprite):
             # Makes the cactus respawn at a further position on a different one based on the
             # Framenumber (which is kinda random)
             self.cactus_pos.x = 1599 + (self.framenumber * 1000)
+
 
         # <------------------>
         # Updates cacti from a list item per item
@@ -229,6 +234,8 @@ class SmallCactus01(Cactus, pg.sprite.Sprite):
 
         self.cactus_pos = vec(SCREEN_WIDTH, 682)
 
+        self.cacScore = 0
+
     def load_images(self):
         self.images = [Spritesheet.get_img(Spritesheet('sprites/cacti-small.png'),0,0,33,69),
                        Spritesheet.get_img(Spritesheet('sprites/cacti-small.png'),36,0,32,69),
@@ -262,6 +269,15 @@ class replayButton(pg.sprite.Sprite):
         self.rect.x = self.butposx
         self.rect.y = self.butposy
 
+    def handleButton(self, event, gameOverBoolean):
+        mouse = pg.mouse.get_pos()
+        if gameOverBoolean == True:
+            if (SCREEN_WIDTH / 2) + self.button_sprite_width > mouse[0] > (SCREEN_WIDTH / 2) and (SCREEN_HEIGHT / 2) + self.button_sprite_length > mouse[1] > (SCREEN_HEIGHT / 2):
+                print("We're in the button")
+                if event.type == pg.MOUSEBUTTONDOWN:
+                    print('click')
+                    return 1
+
 class gameOverFont(pg.sprite.Sprite):
 
     font_width = 381
@@ -281,3 +297,4 @@ class gameOverFont(pg.sprite.Sprite):
 
         self.rect.x = self.GOFx
         self.rect.y = self.GOFy
+
