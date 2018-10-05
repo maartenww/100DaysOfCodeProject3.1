@@ -15,7 +15,7 @@ def main():
         newGame1.updateGame()
         newGame1.drawGame()
         if newGame1.gameOver == True:
-            newGame1.restartGame()
+            newGame1.gameOverScreen()
         elif newGame1.gameOver == False:
             continue
 
@@ -99,31 +99,21 @@ class newGame:
 
     # Handle events
     def handle_events(self):
-        mouse = pg.mouse.get_pos()
         for event in pg.event.get():
             # Movement controls handle
             Player.handle(self.dinosaur, event)
+            replayButton.handleButton(self.button01, event, self.gameOver)
+            isClicked = replayButton.handleButton(self.button01, event, self.gameOver)
+            if isClicked == 1:
+                self.restartGame()
             # Quits if 'x' is clicked
             if event.type == pg.QUIT:
                 self.isRunning = False
                 pg.quit()
                 sys.exit()
 
-        # When game over, checks if the player clicks restart
-        if self.gameOver == True:
-            if (SCREEN_WIDTH / 2) + self.button01.button_sprite_width > mouse[0] > (SCREEN_WIDTH / 2) and (SCREEN_HEIGHT / 2) + self.button01.button_sprite_length > mouse[1] > (SCREEN_HEIGHT / 2):
-                print("We're in the button")
-                for event in pg.event.get():
-                    if event.type == pg.mouse.get_pressed()[0]:
-                        print('click xd') # This doesn't work yet
-
         # For checking mouse pos (debugging)
         #print(str(mouse[0]), str(mouse[1]))
-
-        #TODO: Current state: Basically done, only need to add the ability to restart the game when u click the button
-        #TODO: Current state part2: it prints "we're in the button' when. you guessed it you're in the restart button
-
-        #TODO: Make it so that when you click the button the game score is 0 and the game "restarts"
 
     # Poll and update game
     def updateGame(self):
@@ -140,8 +130,11 @@ class newGame:
         self.dot = self.myFont.render('.',False,BLACK)
 
         # Update score info
-        self.score = self.myFont.render(str(int((pg.time.get_ticks()) / 100)), False, (BLACK))
+        #self.score = self.myFont.render(str(int((pg.time.get_ticks()) / 100)), False, (BLACK))
         self.scoreText = self.myFont.render('Score: ', False, BLACK)
+
+        # New Score
+
 
         # Update screen
         pg.display.update()
@@ -158,7 +151,6 @@ class newGame:
             self.dinosaur.player_vel.y = 0
             self.dinosaur.canjump = True
 
-        #TODO: Cactus collision (Instead of printing lol, make him die also...
         if hits:
             self.gameOver = True
 
@@ -181,6 +173,7 @@ class newGame:
         # For each cactus in the cacti list we use the unique cacUpdate method as well as print the position
         for cactus in cacti:
             cactus.cacUpdate()
+            self.score = self.myFont.render(str(int(cactus.cacScore)), False, BLACK)
 
     # Draw unto surface
     def drawGame(self):
@@ -203,9 +196,14 @@ class newGame:
 
     # Restart game method
     def restartGame(self):
+        for cactus in cacti:
+            cactus.cacScore = 0
+            cactus.Cactus_speed = 0
+        self.isRunning = False
+        # Reset score
+    def gameOverScreen(self):
         self.buttons.draw(self.gameScreen)
         self.GOFS.draw(self.gameScreen)
-        self.score = 0
 
 # Instnatiate new game class
 newGame1 = newGame()
